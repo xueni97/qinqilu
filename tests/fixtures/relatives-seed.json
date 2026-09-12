@@ -1,0 +1,33 @@
+{
+  "relatives": [
+    {"id":1, "name":"爷爷", "gender":"男", "generation":1, "branch":"本家", "parentId":null, "spouseId":2, "birthDate":"1940-05-01", "relationship":"祖父", "features":"白发/瘦高", "deleted":false},
+    {"id":2, "name":"奶奶", "gender":"女", "generation":1, "branch":"本家", "parentId":null, "spouseId":1, "birthDate":"1942-08-15", "relationship":"祖母", "features":"卷发/戴眼镜", "deleted":false},
+    {"id":3, "name":"爸爸", "gender":"男", "generation":2, "branch":"本家", "parentId":1, "spouseId":4, "birthDate":"1965-03-10", "relationship":"父亲", "features":"中等身材", "deleted":false},
+    {"id":4, "name":"妈妈", "gender":"女", "generation":2, "branch":"外婆家", "parentId":null, "spouseId":3, "birthDate":"1968-11-22", "relationship":"母亲", "features":"短发", "deleted":false},
+    {"id":5, "name":"我", "gender":"男", "generation":3, "branch":"本家", "parentId":3, "spouseId":null, "birthDate":"1990-07-15", "relationship":"本人", "features":"", "deleted":false},
+    {"id":6, "name":"大爷", "gender":"男", "generation":2, "branch":"本家", "parentId":1, "spouseId":7, "birthDate":"1960-01-05", "relationship":"伯父", "features":"微胖/戴眼镜", "deleted":false},
+    {"id":7, "name":"大妈", "gender":"女", "generation":2, "branch":"本家", "parentId":null, "spouseId":6, "birthDate":"1962-04-18", "relationship":"伯母", "features":"圆脸", "deleted":false},
+    {"id":8, "name":"大堂哥", "gender":"男", "generation":3, "branch":"本家", "parentId":6, "spouseId":null, "birthDate":"1985-09-30", "relationship":"堂兄", "features":"高个", "deleted":false},
+    {"id":9, "name":"二堂姐", "gender":"女", "generation":3, "branch":"本家", "parentId":6, "spouseId":null, "birthDate":"1988-12-03", "relationship":"堂姐", "features":"长发", "deleted":false},
+    {"id":10, "name":"姑妈", "gender":"女", "generation":2, "branch":"本家", "parentId":1, "spouseId":11, "birthDate":"1963-06-14", "relationship":"姑母", "features":"瘦小", "deleted":false},
+    {"id":11, "name":"张大爷", "gender":"男", "generation":2, "branch":"姑家", "parentId":null, "spouseId":10, "birthDate":"1958-03-15", "relationship":"姑父", "features":"白发/瘦高/戴眼镜", "phone":"138-xxxx-1234", "wechat":"zhangdaye_58", "occupation":"退休教师", "address":"济南", "familyNote":"去年儿子结婚", "lastMetAt":"2026-02-10", "lastMetEvent":"春节聚餐", "lastMetNote":"聊起他儿子工作", "deleted":false},
+    {"id":12, "name":"表哥", "gender":"男", "generation":3, "branch":"姑家", "parentId":11, "spouseId":null, "birthDate":"1986-02-20", "relationship":"表兄", "features":"戴眼镜", "deleted":false},
+    {"id":13, "name":"表妹", "gender":"女", "generation":3, "branch":"姑家", "parentId":11, "spouseId":null, "birthDate":"1992-05-08", "relationship":"表妹", "features":"圆脸", "deleted":false},
+    {"id":14, "name":"外公", "gender":"男", "generation":1, "branch":"外婆家", "parentId":null, "spouseId":15, "birthDate":"1938-07-19", "relationship":"外祖父", "features":"光头", "deleted":false},
+    {"id":15, "name":"外婆", "gender":"女", "generation":1, "branch":"外婆家", "parentId":null, "spouseId":14, "birthDate":"1941-10-25", "relationship":"外祖母", "features":"白发/缠足", "deleted":false},
+    {"id":16, "name":"舅舅", "gender":"男", "generation":2, "branch":"外婆家", "parentId":14, "spouseId":17, "birthDate":"1966-04-30", "relationship":"舅父", "features":"光头/微胖", "deleted":false},
+    {"id":17, "name":"舅妈", "gender":"女", "generation":2, "branch":"外婆家", "parentId":null, "spouseId":16, "birthDate":"1969-08-11", "relationship":"舅母", "features":"戴眼镜", "deleted":false},
+    {"id":18, "name":"表姐", "gender":"女", "generation":3, "branch":"外婆家", "parentId":16, "spouseId":null, "birthDate":"1989-11-07", "relationship":"表姐", "features":"卷发/戴耳环", "deleted":false},
+    {"id":19, "name":"阿姨", "gender":"女", "generation":2, "branch":"外婆家", "parentId":14, "spouseId":null, "birthDate":"1970-03-22", "relationship":"姨母", "features":"瘦高", "deleted":false},
+    {"id":20, "name":"二舅", "gender":"男", "generation":2, "branch":"外婆家", "parentId":14, "spouseId":null, "birthDate":"1972-09-14", "relationship":"舅父", "features":"高个", "deleted":false}
+  ],
+  "photos": [],
+  "gifts": [
+    {"id":1, "relativeId":11, "direction":"out", "amount":500, "occasion":"春节", "date":"2026-02-10", "note":"给姑父", "deleted":false},
+    {"id":2, "relativeId":11, "direction":"in", "amount":200, "occasion":"满月", "date":"2025-06-20", "note":"姑父给我", "deleted":false}
+  ],
+  "visits": [
+    {"id":1, "relativeId":11, "type":"bainian", "date":"2026-02-10", "location":"济南", "done":true, "sequence":1, "note":"春节拜年"},
+    {"id":2, "relativeId":11, "type":"meeting", "date":"2025-10-01", "location":"济南", "done":false, "sequence":0, "note":"国庆顺道看望"}
+  ]
+}

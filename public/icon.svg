@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff8a80"/>
+      <stop offset="100%" stop-color="#ee0a24"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- 心形定位针组合：寓意"记住亲人的位置" -->
+  <path d="M256 400 C256 400 136 300 136 212 C136 150 184 112 256 112 C328 112 376 150 376 212 C376 300 256 400 256 400 Z"
+        fill="#ffffff" opacity="0.96"/>
+  <circle cx="256" cy="216" r="58" fill="#ee0a24"/>
+  <text x="256" y="244" font-family="PingFang SC, Microsoft YaHei, sans-serif"
+        font-size="74" font-weight="bold" text-anchor="middle" fill="#ffffff">亲</text>
+</svg>

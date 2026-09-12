@@ -1,0 +1,43 @@
+{
+  "name": "relatives-memory-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "亲戚记忆APP - PWA + 本地存储，记录一年一见的亲戚",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{js,vue,css}\" \"tests/**/*.js\"",
+    "preview:build": "vite build && vite preview"
+  },
+  "dependencies": {
+    "dexie": "^4.4.6",
+    "face-api.js": "^0.22.2",
+    "lunar-javascript": "^1.7.7",
+    "vant": "^4.10.2",
+    "vue": "^3.5.42",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/test-utils": "^2.5.0",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.11.0",
+    "fake-indexeddb": "^6.2.5",
+    "globals": "^17.12.0",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.6",
+    "sharp": "^0.35.4",
+    "vite": "^8.3.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^5.0.0"
+  }
+}
