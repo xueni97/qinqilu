@@ -1,0 +1,142 @@
+# 亲戚录项目规则
+
+> 本文件是项目通用规则，所有任务实施前必读，确保风格一致、避免重复踩坑。
+
+## 项目概述
+
+- 名称：亲戚录（Relatives Memory App）
+- 仓库：https://github.com/xueni97/qinqilu.git（main 分支）
+- 线上 PWA：https://xueni97.github.io/qinqilu/
+- 定位：纯本地存储的亲戚记忆 APP，解决"一年见面忘名字"问题
+- 用户：Android 手机，APK 侧载自用，无服务器、无后端
+
+## 技术栈
+
+| 层 | 技术 | 版本约束 |
+|---|---|---|
+| 框架 | Vue 3 + Vite 8 | ESM，`type: module` |
+| UI | Vant 4 | 移动端组件库 |
+| 路由 | vue-router 4 | hash 模式（PWA/WebView 友好） |
+| 本地数据库 | Dexie.js 4 (IndexedDB) | 全局单例 `db`，schema 版本化 |
+| 地图 | 百度地图 JS API | 浏览器端 AK，Referer 白名单保护 |
+| 人脸检测 | face-api.js | TinyFaceDetector 模型本地化 |
+| 农历 | lunar-javascript | |
+| PWA | vite-plugin-pwa | autoUpdate 模式，预缓存离线 |
+| Android 打包 | Capacitor 8 | 网页资源内置 APK |
+| 测试 | Vitest 5 + jsdom + fake-indexeddb | 47 个测试 |
+| 代码规范 | ESLint 10 + Prettier 3 | |
+
+## 目录结构约定
+
+```
+src/
+├─ views/          # 页面组件（ListPage/DetailPage/EditPage/TreePage/GiftsPage 等）
+├─ components/     # 可复用组件（BaiduMapPicker/TreeNode）
+├─ db/             # Dexie schema + 各表 DAO（relatives-dao/photos-dao/gifts-dao/backup）
+├─ utils/          # 工具函数（photo/geo/lunar/faceDetect/animals/sort/tree/presets/baiduMapLoader）
+├─ composables/    # Vue 组合式函数（useGeolocation）
+├─ router/         # 路由配置 + safeBack 安全返回
+└─ main.js         # 入口
+public/
+├─ models/         # 人脸检测模型文件
+├─ pwa-192.png     # 应用图标
+└─ pwa-512.png
+android/            # Capacitor 原生 Android 工程
+.github/workflows/
+├─ deploy.yml         # PWA 部署到 GitHub Pages
+└─ android-apk.yml    # APK 构建
+```
+
+## 编码规范
+
+### 通用
+- 所有代码注释和回复用中文
+- 文件用 LF 换行，UTF-8 编码
+- Vue 组件用 `<script setup>` 语法
+- 函数和变量名用英文驼峰，UI 文案用中文
+- DAO 层封装所有 IndexedDB 操作，视图层不直接操作 `db`
+
+### Vue 组件
+- 每个页面顶部用 `<van-nav-bar>` 导航栏，左箭头绑定 `goBack`（不是 `$router.back()`）
+- 页面间导航用 `router.push()`，返回用 `safeBack(router)`（从 `../router/index.js` 导入）
+- 固定导航栏用 `van-nav-bar fixed`，配合 `env(safe-area-inset-top)` 适配状态栏
+
+### CSS
+- 全局样式在 `App.vue` 的 `<style>`（非 scoped）
+- 页面样式在各自 `.vue` 文件的 `<style scoped>`
+- 固定定位元素必须加 `env(safe-area-inset-top)` 偏移
+- 移动端适配：`viewport-fit=cover` 已在 index.html 设置
+
+### 数据库
+- Schema 变更必须升级 `db.version(n)`，不能改已有版本
+- 软删除：`deleted` 字段标记，30 天后清理
+- 照片独立存表（photos），主档只存 `photoId` 引用
+- 删除主图后自动选下一张为主图
+
+### 照片处理
+- 压缩参数：2560px 宽 + JPEG 0.92（高清存储，保留细节）
+- 缩略图：80px 宽 + JPEG 0.6
+- Blob 存 IndexedDB，不用 base64（节省空间）
+- 导出备份时才转 base64
+
+## APK 构建规则
+
+### 签名
+- 使用固定 keystore：`android/app/qinqilu-release.keystore`
+- 密码/别名硬编码在 `android/app/build.gradle` 的 `signingConfigs.release`
+- CI 构建 `assembleRelease`（不是 debug），确保签名一致可覆盖安装
+- **禁止**改用 debug 构建或更换 keystore
+
+### CI 工作流
+- 触发：push main（paths 过滤）或 workflow_dispatch
+- 步骤：Node 24 → JDK 21 → npm ci → build → cap sync → gradlew assembleRelease
+- `gradlew` 需在 CI 中 `chmod +x`（Windows 提交无执行权限位）
+- Artifact 保留 90 天，命名 `qinqilu-apk-v{run_number}`
+
+### 权限
+- INTERNET（地图加载）
+- ACCESS_FINE_LOCATION / ACCESS_COARSE_LOCATION（地图定位）
+- CAMERA（拍照录入）
+- uses-feature 均 `required=false`（无硬件设备也可安装）
+
+## 测试规范
+
+- 测试文件在 `tests/` 目录，镜像 `src/` 结构
+- 集成测试用 fake-indexeddb，单元测试用纯函数
+- 运行命令：`npm test`（或 `npx vitest run`）
+- Windows 偶发 fork worker 启动失败，重跑即通过
+- **提交前必须**：`npm run build` 通过 + `npm test` 47 个全绿
+
+## Git 提交规范
+
+- 提交信息用中文，格式：`type: 简述`
+  - `fix:` Bug 修复
+  - `feat:` 新功能
+  - `docs:` 文档更新
+  - `refactor:` 重构
+  - `chore:` 杂项
+- PowerShell 不支持 heredoc，多行 commit message 用临时文件 `git commit -F file`（用完删除）
+- 推送用 token URL：`git push https://xueni97:<token>@github.com/xueni97/qinqilu.git main`
+- 不提交 dist/、node_modules/、*.keystore 之外的二进制文件
+
+## 常见坑与经验
+
+1. **gradlew 权限**：Windows 提交的 gradlew 在 Linux CI 无执行权限，必须 `chmod +x`
+2. **签名不一致**：debug 构建每次用随机密钥，必须用固定 release keystore
+3. **状态栏重叠**：Capacitor APK 里 `van-nav-bar` 会和系统状态栏重叠，全局加 `env(safe-area-inset-top)`
+4. **硬件返回键**：Android 物理返回键默认退出 APP，需用 `@capacitor/app` 拦截 + `safeBack()` 应用内导航
+5. **IndexedDB Blob**：fake-indexeddb 取出的 blob 可能丢原型，用 `instanceof Blob` 检查
+6. **百度地图 AK**：浏览器端 AK 是公开的（靠 Referer 白名单保护），需在百度控制台加 `xueni97.github.io`
+7. **npm 网络偶发失败**：重试即可，不是代码问题
+8. **vitest Windows fork worker**：偶发启动失败，重跑即通过
+9. **Capacitor sync 产物**：`android/app/src/main/assets/public/` 被 .gitignore 忽略，CI 里执行 sync 是正确做法
+10. **新依赖安装后 CI 变慢**：首次需下载新包，后续有缓存恢复正常
+
+## 禁止事项
+
+- 禁止改用 debug 构建或更换 keystore（会导致签名不一致无法覆盖安装）
+- 禁止把 dist/ 或 cap sync 产物提交到仓库
+- 禁止在视图层直接操作 `db`（必须走 DAO 层）
+- 禁止用 `$router.back()`（用 `safeBack(router)` 代替）
+- 禁止给照片压缩参数降级（已从 1024px 升到 2560px 高清）
+- 禁止在固定定位元素上省略 `env(safe-area-inset-top)`
