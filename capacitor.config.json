@@ -1,0 +1,8 @@
+{
+  "appId": "com.xueni97.qinqilu",
+  "appName": "亲戚录",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  }
+}
