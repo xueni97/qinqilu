@@ -9,13 +9,15 @@ import { useRouter } from 'vue-router'
 import { Capacitor } from '@capacitor/core'
 import { App as CapacitorApp } from '@capacitor/app'
 import { safeBack } from './router/index.js'
+import { handleNativeBack } from './utils/nativeBack.js'
 
 const router = useRouter()
 
 // 硬件返回键 / 侧滑返回手势拦截（仅原生 APP 生效，浏览器忽略）
-// 规则：首页(含地图/列表)直接退出 APP，其他页面返回上一层
+// 优先级：弹层/全屏子页（nativeBack 拦截栈）→ 非首页返回上一层 → 首页退出 APP
 if (Capacitor.isNativePlatform()) {
   CapacitorApp.addListener('backButton', () => {
+    if (handleNativeBack()) return
     if (router.currentRoute.value.path === '/') {
       CapacitorApp.exitApp()
     } else {
@@ -34,6 +36,7 @@ if (Capacitor.isNativePlatform()) {
    * 3. 0
    */
   --app-safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --app-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 }
 
 * {

@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { listRelatives } from '../db/relatives-dao.js'
 import { listUpcomingGifts } from '../db/gifts-dao.js'
@@ -127,6 +127,7 @@ import { useGeolocation } from '../composables/useGeolocation.js'
 import { loadBaiduMap } from '../utils/baiduMapLoader.js'
 import { formatDistance } from '../utils/geo.js'
 import { getAnimalEmoji } from '../utils/animals.js'
+import { pushBackHandler } from '../utils/nativeBack.js'
 
 const router = useRouter()
 const { myLat, myLng, locating, error: geoError, locateMe, setMyLocation, clearLocation } = useGeolocation()
@@ -309,13 +310,38 @@ function startManualPick() {
   alert('请在地图上点击你的位置')
   mapClickListener = (e) => {
     setMyLocation(e.point.lat, e.point.lng)
-    manualPicking.value = false
-    mapInstance.removeEventListener('click', mapClickListener)
-    mapClickListener = null
+    cancelManualPick()
     load()
   }
   mapInstance.addEventListener('click', mapClickListener)
 }
+
+// 退出手动选点模式并移除地图点击监听
+function cancelManualPick() {
+  manualPicking.value = false
+  if (mapClickListener && mapInstance) {
+    mapInstance.removeEventListener('click', mapClickListener)
+  }
+  mapClickListener = null
+}
+
+// 原生返回：先关菜单/取消选点模式；都没有则交回 App.vue（首页退出 APP）
+let unregisterBack = null
+onMounted(() => {
+  unregisterBack = pushBackHandler(() => {
+    if (showMenu.value) {
+      showMenu.value = false
+      return true
+    }
+    if (manualPicking.value) {
+      cancelManualPick()
+      return true
+    }
+    return false
+  })
+  load()
+})
+onUnmounted(() => unregisterBack?.())
 
 function onSearch() { load() }
 function onGenChange() { load() }
@@ -339,8 +365,6 @@ watch(viewMode, (v) => {
     nextTick(() => initMap())
   }
 })
-
-onMounted(load)
 </script>
 
 <style>
@@ -376,7 +400,13 @@ onMounted(load)
 </style>
 
 <style scoped>
-.page { min-height: 100vh; background: #f7f8fa; }
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  /* 本页顶栏全部 fixed（内部 calc 已含安全区），抵消 .app 的全局安全区
+     padding，避免安全区被加两次导致地图与 Tab 间出现状态栏高度的空隙 */
+  margin-top: calc(-1 * var(--app-safe-top));
+}
 
 .view-tabs {
   position: fixed;
@@ -387,11 +417,12 @@ onMounted(load)
   background: #fff;
 }
 
-/* 地图视图 */
+/* 地图视图：.page 已用负 margin 回到视口顶，本元素铺满整屏，
+   仅用 padding-top 给 fixed 的导航栏(46)+Tabs(44)+安全区让位 */
 .map-view {
   position: relative;
   padding-top: calc(92px + var(--app-safe-top));
-  height: calc(100vh - 92px - var(--app-safe-top));
+  height: 100vh;
 }
 .home-map {
   width: 100%;
@@ -450,7 +481,7 @@ onMounted(load)
 
 .info-card {
   position: absolute;
-  bottom: 20px;
+  bottom: calc(20px + var(--app-safe-bottom));
   left: 12px;
   right: 12px;
   z-index: 10;
@@ -491,7 +522,9 @@ onMounted(load)
   z-index: 100;
   background: #fff;
 }
-.list-body { padding: calc(180px + var(--app-safe-top)) 0 80px; }
+/* .list-view 已有 92+safe 的 padding 把内容推到 Tabs 下，
+   这里只需再让开 fixed 搜索栏自身高度（搜索框54+辈分Tabs44）*/
+.list-body { padding: 98px 0 80px; }
 
 .list-animal {
   font-size: 24px;
@@ -506,4 +539,9 @@ onMounted(load)
 }
 
 .distance { color: #07c160; font-size: 12px; margin-right: 6px; }
+
+/* 悬浮按钮避让手势导航条（Vant 内联 bottom，需 !important 覆盖） */
+:deep(.van-floating-bubble) {
+  bottom: calc(16px + var(--app-safe-bottom)) !important;
+}
 </style>

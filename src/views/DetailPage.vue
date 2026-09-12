@@ -161,7 +161,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showSuccessToast, showFailToast } from 'vant'
 import { getRelative, getChildren, getSpouse, updateRelative } from '../db/relatives-dao.js'
@@ -169,6 +169,7 @@ import { listPhotosByRelative, getPrimaryThumbnail, getPrimarySticker } from '..
 import { listGiftsByRelative } from '../db/gifts-dao.js'
 import { db } from '../db/index.js'
 import { safeBack } from '../router/index.js'
+import { pushBackHandler } from '../utils/nativeBack.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -359,7 +360,19 @@ function onMenuSelect(action) {
 }
 
 watch(() => route.params.id, load)
-onMounted(load)
+
+// 原生返回：照片预览/记一笔弹窗/菜单优先关闭，之后才返回列表
+let unregisterBack = null
+onMounted(() => {
+  unregisterBack = pushBackHandler(() => {
+    if (showPhotoPreview.value) { showPhotoPreview.value = false; return true }
+    if (showVisit.value) { showVisit.value = false; return true }
+    if (showMenu.value) { showMenu.value = false; return true }
+    return false
+  })
+  load()
+})
+onUnmounted(() => unregisterBack?.())
 </script>
 
 <style scoped>

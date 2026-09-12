@@ -151,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showConfirmDialog, showSuccessToast, showFailToast } from 'vant'
 import {
@@ -159,6 +159,7 @@ import {
 } from '../db/gifts-dao.js'
 import { listRelatives, getRelative } from '../db/relatives-dao.js'
 import { safeBack } from '../router/index.js'
+import { pushBackHandler } from '../utils/nativeBack.js'
 
 const router = useRouter()
 const goBack = () => safeBack(router)
@@ -256,11 +257,27 @@ async function onDelete(id) {
   }
 }
 
-onMounted(load)
+// 原生返回：先关二级「选亲戚」弹层，再关「记礼金」弹层，最后才返回上一页
+let unregisterBack = null
+onMounted(() => {
+  unregisterBack = pushBackHandler(() => {
+    if (showRelPicker.value) { showRelPicker.value = false; return true }
+    if (showAdd.value) { showAdd.value = false; return true }
+    return false
+  })
+  load()
+})
+onUnmounted(() => unregisterBack?.())
 </script>
 
 <style scoped>
-.page { min-height: 100vh; background: #f7f8fa; padding-top: calc(46px + var(--app-safe-top)); }
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  /* fixed 导航栏页：内部 padding 已含安全区，抵消 .app 全局 padding 防双重偏移 */
+  margin-top: calc(-1 * var(--app-safe-top));
+  padding-top: calc(46px + var(--app-safe-top));
+}
 .content { padding: 12px 0 80px; }
 
 .stat-card { padding: 16px; }

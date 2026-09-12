@@ -113,6 +113,7 @@
 <script>
 import { loadBaiduMap } from '../utils/baiduMapLoader.js'
 import { useGeolocation } from '../composables/useGeolocation.js'
+import { pushBackHandler } from '../utils/nativeBack.js'
 
 export default {
   name: 'BaiduMapPicker',
@@ -155,7 +156,15 @@ export default {
     }
   },
   mounted() {
+    // 全屏选点层打开期间，侧滑/返回键只关闭选点层，不退出编辑页
+    this.unregisterBack = pushBackHandler(() => {
+      this.$emit('cancel')
+      return true
+    })
     this.initMap()
+  },
+  beforeUnmount() {
+    this.unregisterBack?.()
   },
   methods: {
     async initMap() {
@@ -382,7 +391,7 @@ export default {
 }
 
 .confirm-bar {
-  padding: 12px 16px;
+  padding: 12px 16px calc(12px + var(--app-safe-bottom));
   background: #fff;
   border-top: 1px solid #f5f5f5;
   display: flex;
@@ -419,6 +428,6 @@ export default {
   line-height: 1.8;
 }
 .fallback-actions {
-  padding: 16px;
+  padding: 16px 16px calc(16px + var(--app-safe-bottom));
 }
 </style>
