@@ -1,0 +1,6 @@
+fix: 彻底修复状态栏重叠+首页后退退出APP
+
+1. Android布局加fitsSystemWindows=true，WebView不再铺到状态栏下面
+2. 全局导航栏top加!important确保覆盖Vant默认值
+3. BaiduMapPicker加padding-top安全区域适配
+4. 首页按后退键时调用exitApp()正常退出APP
