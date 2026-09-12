@@ -190,7 +190,7 @@ onMounted(load)
 </script>
 
 <style scoped>
-.page { min-height: 100vh; background: #f7f8fa; padding-top: calc(46px + env(safe-area-inset-top)); }
+.page { min-height: 100vh; background: #f7f8fa; padding-top: calc(46px + var(--app-safe-top)); }
 .content { padding: 12px 0 80px; }
 
 .spring-card {

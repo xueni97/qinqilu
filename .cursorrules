@@ -59,13 +59,14 @@ android/            # Capacitor 原生 Android 工程
 ### Vue 组件
 - 每个页面顶部用 `<van-nav-bar>` 导航栏，左箭头绑定 `goBack`（不是 `$router.back()`）
 - 页面间导航用 `router.push()`，返回用 `safeBack(router)`（从 `../router/index.js` 导入）
-- 固定导航栏用 `van-nav-bar fixed`，配合 `env(safe-area-inset-top)` 适配状态栏
+- 固定导航栏用 `van-nav-bar fixed`，配合 `var(--app-safe-top)` 适配状态栏
 
 ### CSS
 - 全局样式在 `App.vue` 的 `<style>`（非 scoped）
 - 页面样式在各自 `.vue` 文件的 `<style scoped>`
-- 固定定位元素必须加 `env(safe-area-inset-top)` 偏移
-- 移动端适配：`viewport-fit=cover` 已在 index.html 设置
+- 安全区域**必须**用统一变量 `var(--app-safe-top)`（在 App.vue `:root` 定义），不要直接写 `env(safe-area-inset-top)`——Capacitor 8 在 Android 14+ 新 WebView 上走 passthrough 模式，`env()` 返回 0，只有它注入的 `--safe-area-inset-top` 有效
+- 固定定位元素必须加安全区偏移；新增全屏 fixed 组件时自身也要加
+- 移动端适配：`viewport-fit=cover` 已在 index.html 设置；capacitor.config.json 配了 SystemBars.initialViewportFitValueHint=cover
 
 ### 数据库
 - Schema 变更必须升级 `db.version(n)`，不能改已有版本
@@ -123,8 +124,8 @@ android/            # Capacitor 原生 Android 工程
 
 1. **gradlew 权限**：Windows 提交的 gradlew 在 Linux CI 无执行权限，必须 `chmod +x`
 2. **签名不一致**：debug 构建每次用随机密钥，必须用固定 release keystore
-3. **状态栏重叠**：Capacitor APK 里 `van-nav-bar` 会和系统状态栏重叠，全局加 `env(safe-area-inset-top)`
-4. **硬件返回键**：Android 物理返回键默认退出 APP，需用 `@capacitor/app` 拦截 + `safeBack()` 应用内导航
+3. **状态栏重叠**：Capacitor 8 + WebView 140+ + viewport-fit=cover 时走 passthrough 模式，`env(safe-area-inset-top)` 在 Android WebView 返回 0；必须用 Capacitor 注入的 `--safe-area-inset-top`（项目封装为 `var(--app-safe-top)`）。不要给原生布局加 fitsSystemWindows，会双重偏移
+4. **硬件返回键/侧滑返回**：@capacitor/app 必须**静态 import**（动态 import 在 WebView 可能不执行），用 `Capacitor.isNativePlatform()` 守卫；首页 `/` 调 `exitApp()` 退出，其他页 `safeBack()` 返回上一层
 5. **IndexedDB Blob**：fake-indexeddb 取出的 blob 可能丢原型，用 `instanceof Blob` 检查
 6. **百度地图 AK**：浏览器端 AK 是公开的（靠 Referer 白名单保护），需在百度控制台加 `xueni97.github.io`
 7. **npm 网络偶发失败**：重试即可，不是代码问题

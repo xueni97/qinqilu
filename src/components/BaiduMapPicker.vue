@@ -316,7 +316,7 @@ export default {
   display: flex;
   flex-direction: column;
   /* 安全区域：顶部状态栏不重叠 */
-  padding-top: env(safe-area-inset-top);
+  padding-top: var(--app-safe-top);
 }
 
 .top-bar {

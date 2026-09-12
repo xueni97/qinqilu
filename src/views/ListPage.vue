@@ -380,7 +380,7 @@ onMounted(load)
 
 .view-tabs {
   position: fixed;
-  top: calc(46px + env(safe-area-inset-top));
+  top: calc(46px + var(--app-safe-top));
   left: 0;
   right: 0;
   z-index: 100;
@@ -390,8 +390,8 @@ onMounted(load)
 /* 地图视图 */
 .map-view {
   position: relative;
-  padding-top: calc(92px + env(safe-area-inset-top));
-  height: calc(100vh - 92px - env(safe-area-inset-top));
+  padding-top: calc(92px + var(--app-safe-top));
+  height: calc(100vh - 92px - var(--app-safe-top));
 }
 .home-map {
   width: 100%;
@@ -400,7 +400,7 @@ onMounted(load)
 
 .locate-bar {
   position: absolute;
-  top: calc(100px + env(safe-area-inset-top));
+  top: calc(100px + var(--app-safe-top));
   left: 12px;
   right: 12px;
   z-index: 10;
@@ -417,7 +417,7 @@ onMounted(load)
 
 .todo-bar {
   position: absolute;
-  top: calc(152px + env(safe-area-inset-top));
+  top: calc(152px + var(--app-safe-top));
   left: 12px;
   right: 12px;
   z-index: 9;
@@ -482,16 +482,16 @@ onMounted(load)
 .info-met { color: #969799; margin-top: 4px; }
 
 /* 列表视图 */
-.list-view { padding-top: calc(92px + env(safe-area-inset-top)); }
+.list-view { padding-top: calc(92px + var(--app-safe-top)); }
 .search-bar {
   position: fixed;
-  top: calc(92px + env(safe-area-inset-top));
+  top: calc(92px + var(--app-safe-top));
   left: 0;
   right: 0;
   z-index: 100;
   background: #fff;
 }
-.list-body { padding: calc(180px + env(safe-area-inset-top)) 0 80px; }
+.list-body { padding: calc(180px + var(--app-safe-top)) 0 80px; }
 
 .list-animal {
   font-size: 24px;
