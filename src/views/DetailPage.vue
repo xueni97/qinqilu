@@ -1,6 +1,6 @@
 <template>
   <div class="page" v-if="relative">
-    <van-nav-bar left-arrow @click-left="$router.back()">
+    <van-nav-bar left-arrow @click-left="goBack">
       <template #title>
         <span>{{ relative.name }}</span>
       </template>
@@ -43,19 +43,31 @@
         <div class="features-text">{{ relative.features || '未填写特征' }}</div>
         <div class="photo-album">
           <div v-if="photos.length === 0" class="no-photos">暂无照片</div>
-          <img
-            v-for="p in photos"
-            :key="p.id"
-            :src="toThumbUrl(p)"
-            class="album-thumb"
-            @error="onThumbError(p)"
-          />
+          <template v-else>
+            <img
+              v-for="(p, i) in photos.slice(0, 3)"
+              :key="p.id"
+              :src="toThumbUrl(p)"
+              class="album-thumb"
+              @click="onPhotoClick(i)"
+              @error="onThumbError(p)"
+            />
+            <div v-if="photos.length > 3" class="more-photos" @click="onPhotoClick(0)">
+              <van-icon name="photo-o" size="20" />
+              <span>共{{ photos.length }}张</span>
+              <span class="more-hint">点击查看全部</span>
+            </div>
+          </template>
         </div>
       </van-collapse-item>
 
       <van-collapse-item title="家庭详情" name="family">
+        <!-- 父项：带左侧色条，与子项区分 -->
+        <div class="section-label">配偶信息</div>
         <van-cell v-if="spouse" title="配偶" :value="spouse.name" is-link @click="goRelative(spouse.id)" />
         <van-cell v-else title="配偶" value="未填写" />
+
+        <div class="section-label">职业住址</div>
         <van-cell title="职业" :value="relative.occupation || '未填写'" />
         <van-cell title="单位" :value="relative.workplace || '未填写'" />
         <van-cell
@@ -64,8 +76,23 @@
           :is-link="!!relative.address"
           @click="onNavigate"
         />
+
+        <!-- 子女列表：子项缩进，背景区分 -->
         <div v-if="children.length > 0">
-          <van-cell v-for="c in children" :key="c.id" title="子女" :value="c.name" is-link @click="goRelative(c.id)" />
+          <div class="section-label">子女（{{ children.length }}）</div>
+          <div class="child-list">
+            <van-cell
+              v-for="c in children"
+              :key="c.id"
+              :title="c.name"
+              is-link
+              @click="goRelative(c.id)"
+            >
+              <template #icon>
+                <van-icon name="user-o" class="child-icon" />
+              </template>
+            </van-cell>
+          </div>
         </div>
         <div class="family-note" v-if="relative.familyNote">备注：{{ relative.familyNote }}</div>
       </van-collapse-item>
@@ -108,6 +135,13 @@
       </van-collapse-item>
     </van-collapse>
 
+    <!-- 全屏照片预览 -->
+    <van-image-preview
+      v-model:show="showPhotoPreview"
+      :images="previewImages"
+      :start-position="previewStart"
+    />
+
     <!-- 记一笔见面弹窗 -->
     <van-dialog
       v-model:show="showVisit"
@@ -134,6 +168,7 @@ import { getRelative, getChildren, getSpouse, updateRelative } from '../db/relat
 import { listPhotosByRelative, getPrimaryThumbnail, getPrimarySticker } from '../db/photos-dao.js'
 import { listGiftsByRelative } from '../db/gifts-dao.js'
 import { db } from '../db/index.js'
+import { safeBack } from '../router/index.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -153,7 +188,14 @@ const showVisit = ref(false)
 const imgError = ref(false)
 const activeSections = ref(['identity', 'family', 'contact'])
 
+// 照片预览
+const showPhotoPreview = ref(false)
+const previewImages = ref([])
+const previewStart = ref(0)
+
 const newVisit = ref({ date: new Date().toISOString().slice(0, 10), event: '', note: '' })
+
+const goBack = () => safeBack(router)
 
 const menuActions = [
   { name: '编辑', action: 'edit' },
@@ -269,6 +311,22 @@ function onThumbError(p) {
   console.warn('缩略图加载失败', p.id)
 }
 
+// 点击照片：打开全屏预览，展示高清原图
+async function onPhotoClick(startIndex) {
+  // 生成高清原图 URL 列表
+  const urls = []
+  for (const p of photos.value) {
+    if (p.blob instanceof Blob) {
+      urls.push(URL.createObjectURL(p.blob))
+    } else if (p.thumbnail instanceof Blob) {
+      urls.push(URL.createObjectURL(p.thumbnail))
+    }
+  }
+  previewImages.value = urls
+  previewStart.value = startIndex
+  showPhotoPreview.value = true
+}
+
 async function saveVisit() {
   // 把弹窗录入合并到主档 lastMet* 三字段
   await updateRelative(id, {
@@ -327,9 +385,28 @@ onMounted(load)
 .hero-sub { font-size: 14px; color: #969799; margin-top: 4px; }
 
 .features-text { padding: 8px 0; color: #323233; }
-.photo-album { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.album-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; }
+.photo-album { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+.album-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; }
 .no-photos { color: #c8c9cc; font-size: 13px; }
+.more-photos {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 80px; height: 80px; background: #f2f3f5; border-radius: 6px; cursor: pointer;
+  font-size: 11px; color: #646566; gap: 2px;
+}
+.more-photos .more-hint { font-size: 10px; color: #969799; }
+
+/* 家庭详情：父项分组标签 */
+.section-label {
+  font-size: 13px; font-weight: 600; color: #1989fa;
+  padding: 8px 16px 4px; margin-top: 4px;
+  border-left: 3px solid #1989fa;
+  background: #f0f9ff;
+}
+/* 子女列表项：缩进 + 背景区分 */
+.child-list { margin-left: 12px; }
+.child-list :deep(.van-cell) { background: #fafbfc; }
+.child-icon { margin-right: 8px; color: #969799; font-size: 16px; }
+
 .family-note { margin-top: 8px; padding: 8px; background: #f7f8fa; border-radius: 4px; font-size: 13px; color: #646566; }
 .last-note { padding: 8px; background: #fff7e6; border-radius: 4px; font-size: 13px; margin: 8px 0; color: #ed6a20; }
 

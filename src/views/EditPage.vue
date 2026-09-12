@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <van-nav-bar :title="isNew ? '新建亲戚' : '编辑亲戚'" left-arrow @click-left="$router.back()">
+    <van-nav-bar :title="isNew ? '新建亲戚' : '编辑亲戚'" left-arrow @click-left="goBack">
       <template #right>
         <van-button v-if="!isNew" type="danger" size="mini" @click="onDelete">删除</van-button>
       </template>
@@ -239,12 +239,14 @@ import { addPhoto } from '../db/photos-dao.js'
 import { compressPhoto } from '../utils/photo.js'
 import { cropFaceToSticker } from '../utils/faceDetect.js'
 import { RELATIONSHIP_PRESETS, BRANCH_PRESETS, FEATURE_PRESETS } from '../utils/presets.js'
+import { safeBack } from '../router/index.js'
 import BaiduMapPicker from '../components/BaiduMapPicker.vue'
 
 const route = useRoute()
 const router = useRouter()
 const id = Number(route.params.id) || null
 const isNew = computed(() => !id || Number.isNaN(id))
+const goBack = () => safeBack(router)
 
 const GEN_NAMES = { 1: '祖辈', 2: '父辈', 3: '同辈', 4: '晚辈', 5: '孙辈' }
 const genColumns = Object.entries(GEN_NAMES).map(([v, t]) => ({ text: t, value: Number(v) }))

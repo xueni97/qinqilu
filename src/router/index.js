@@ -54,4 +54,14 @@ const router = createRouter({
   routes
 })
 
+// 安全返回：有历史记录则后退，否则回到首页
+// 避免在 Capacitor APK 中直接退出 APP
+export function safeBack(router) {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.replace('/')
+  }
+}
+
 export default router

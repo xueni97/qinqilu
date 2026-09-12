@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <van-nav-bar title="提醒中心" left-arrow @click-left="$router.back()" fixed />
+    <van-nav-bar title="提醒中心" left-arrow @click-left="goBack" fixed />
 
     <div class="content">
       <!-- 拜年倒数大卡片 -->
@@ -87,10 +87,15 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { listRelatives } from '../db/relatives-dao.js'
 import { listUpcomingGifts } from '../db/gifts-dao.js'
 import { springFestivalThisYear, lunarBirthdayThisYear } from '../utils/lunar.js'
 import { getAnimalEmoji } from '../utils/animals.js'
+import { safeBack } from '../router/index.js'
+
+const router = useRouter()
+const goBack = () => safeBack(router)
 
 const loading = ref(true)
 const relatives = ref([])
@@ -185,7 +190,7 @@ onMounted(load)
 </script>
 
 <style scoped>
-.page { min-height: 100vh; background: #f7f8fa; padding-top: 46px; }
+.page { min-height: 100vh; background: #f7f8fa; padding-top: calc(46px + env(safe-area-inset-top)); }
 .content { padding: 12px 0 80px; }
 
 .spring-card {

@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <van-nav-bar title="礼金往来" left-arrow @click-left="$router.back()" fixed>
+    <van-nav-bar title="礼金往来" left-arrow @click-left="goBack" fixed>
       <template #right>
         <van-icon name="plus" size="18" @click="showAdd = true" />
       </template>
@@ -152,11 +152,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { showConfirmDialog, showSuccessToast, showFailToast } from 'vant'
 import {
   addGift, listAllGifts, getGiftStats, getGiftsByRelative, deleteGift, updateGift
 } from '../db/gifts-dao.js'
 import { listRelatives, getRelative } from '../db/relatives-dao.js'
+import { safeBack } from '../router/index.js'
+
+const router = useRouter()
+const goBack = () => safeBack(router)
 
 const stats = ref({ out: 0, in: 0, net: 0, count: 0 })
 const grouped = ref([])
@@ -255,7 +260,7 @@ onMounted(load)
 </script>
 
 <style scoped>
-.page { min-height: 100vh; background: #f7f8fa; padding-top: 46px; }
+.page { min-height: 100vh; background: #f7f8fa; padding-top: calc(46px + env(safe-area-inset-top)); }
 .content { padding: 12px 0 80px; }
 
 .stat-card { padding: 16px; }

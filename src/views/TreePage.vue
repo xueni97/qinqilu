@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <van-nav-bar title="家族树" left-arrow @click-left="$router.back()" />
+    <van-nav-bar title="家族树" left-arrow @click-left="goBack" />
 
     <div v-if="grouped.length === 0">
       <van-empty description="还没有亲戚，去添加" >
@@ -26,8 +26,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { listRelatives } from '../db/relatives-dao.js'
+import { safeBack } from '../router/index.js'
 import TreeNode from '../components/TreeNode.vue'
+
+const router = useRouter()
+const goBack = () => safeBack(router)
 
 const GEN_NAMES = { 1: '祖辈', 2: '父辈', 3: '同辈', 4: '晚辈', 5: '孙辈' }
 

@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <van-nav-bar title="备份" left-arrow @click-left="$router.back()" />
+    <van-nav-bar title="备份" left-arrow @click-left="goBack" />
 
     <div class="backup-body">
       <van-cell-group inset>
@@ -40,9 +40,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { showSuccessToast, showFailToast, showNotify } from 'vant'
 import { db } from '../db/index.js'
 import { exportAll, importAll, checkExportHealth } from '../db/backup.js'
+import { safeBack } from '../router/index.js'
+
+const router = useRouter()
+const goBack = () => safeBack(router)
 
 const stats = ref({ relatives: 0, photos: 0, gifts: 0, visits: 0 })
 const exporting = ref(false)

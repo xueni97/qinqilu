@@ -380,7 +380,7 @@ onMounted(load)
 
 .view-tabs {
   position: fixed;
-  top: 46px;
+  top: calc(46px + env(safe-area-inset-top));
   left: 0;
   right: 0;
   z-index: 100;
@@ -390,8 +390,8 @@ onMounted(load)
 /* 地图视图 */
 .map-view {
   position: relative;
-  padding-top: 92px;
-  height: calc(100vh - 92px);
+  padding-top: calc(92px + env(safe-area-inset-top));
+  height: calc(100vh - 92px - env(safe-area-inset-top));
 }
 .home-map {
   width: 100%;
@@ -400,7 +400,7 @@ onMounted(load)
 
 .locate-bar {
   position: absolute;
-  top: 100px;
+  top: calc(100px + env(safe-area-inset-top));
   left: 12px;
   right: 12px;
   z-index: 10;
@@ -417,7 +417,7 @@ onMounted(load)
 
 .todo-bar {
   position: absolute;
-  top: 152px;
+  top: calc(152px + env(safe-area-inset-top));
   left: 12px;
   right: 12px;
   z-index: 9;
@@ -482,16 +482,16 @@ onMounted(load)
 .info-met { color: #969799; margin-top: 4px; }
 
 /* 列表视图 */
-.list-view { padding-top: 92px; }
+.list-view { padding-top: calc(92px + env(safe-area-inset-top)); }
 .search-bar {
   position: fixed;
-  top: 92px;
+  top: calc(92px + env(safe-area-inset-top));
   left: 0;
   right: 0;
   z-index: 100;
   background: #fff;
 }
-.list-body { padding: 180px 0 80px; }
+.list-body { padding: calc(180px + env(safe-area-inset-top)) 0 80px; }
 
 .list-animal {
   font-size: 24px;

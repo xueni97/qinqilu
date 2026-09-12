@@ -1,11 +1,10 @@
 // 照片压缩工具：输入图片 Blob，输出 { blob, thumbnail }
-// - blob：压缩到 1024px 宽 + JPEG 0.7 质量（原图约 100-300KB）
+// - blob：高清存储，压缩到 2560px 宽 + JPEG 0.92 质量（保留细节方便后期查看，约 0.5-2MB）
 // - thumbnail：缩略图，约 80px 宽 + JPEG 0.6（列表用，约 5KB）
-// 设计文档 5.1 节：避免 IndexedDB 配额超限
 
-const MAX_WIDTH = 1024
+const MAX_WIDTH = 2560
 const THUMBNAIL_WIDTH = 80
-const QUALITY = 0.7
+const QUALITY = 0.92
 const THUMBNAIL_QUALITY = 0.6
 
 // 从 Blob 生成 Image 对象
