@@ -49,6 +49,7 @@
 | 人脸检测 | face-api.js（TinyFaceDetector，模型本地化） |
 | 农历 | lunar-javascript |
 | 离线 | vite-plugin-pwa（Service Worker 预缓存） |
+| Android 打包 | Capacitor 8（网页资源内置 APK）+ GitHub Actions |
 | 测试 | Vitest + @vue/test-utils + fake-indexeddb |
 
 ## 本地开发
@@ -108,6 +109,27 @@ npm run format     # Prettier
 不想部署时，电脑运行 `npm run dev`，手机连同一 WiFi 打开
 `http://<电脑局域网IP>:5173`（控制台会打印地址）。
 
+## 📦 安装 Android APK（像普通 APP 一样安装）
+
+除了浏览器"添加到主屏幕"，项目还通过 [Capacitor](https://capacitorjs.com/) 把网页资源打包进原生 Android 安装包（包名 `com.xueni97.qinqilu`，应用名"亲戚录"），**完全离线运行**。无需在本机安装 Android Studio：推送到 `main` 后 GitHub Actions 自动构建 APK。
+
+### 第 1 步：下载 APK
+
+1. 电脑浏览器打开仓库 Actions 页：<https://github.com/xueni97/qinqilu/actions>
+2. 登录 GitHub 账号，点击最新一条绿色 ✅ 的 **Build Android APK** 记录
+3. 页面最下方 **Artifacts** 区域，下载 `qinqilu-apk-v<数字>`（数字越大版本越新）
+4. 下载到的是 zip 压缩包，**解压后得到 `qinqilu-v<数字>.apk`**
+
+### 第 2 步：安装到安卓手机
+
+1. 把 apk 发到手机（微信"文件传输助手"、QQ、数据线均可），也可直接在手机上下载解压
+2. 点击 apk 进行安装；若系统拦截，按提示允许当前 App（文件管理器/浏览器/微信）**"安装未知来源应用"**
+3. 安装完成后桌面出现"亲戚录"图标，点开即用
+
+> - **以后怎么更新**：每次向 `main` 推送代码，Actions 会自动构建新 APK，回到 Actions 页面下载最新版覆盖安装即可（数据不会丢）
+> - 该包为 debug 自签名安装包，适合自用侧载，不能上架应用商店
+> - APK 版的数据与浏览器/PWA 版相互独立、不互通；换手机请用应用内"备份"功能导出 / 导入 JSON
+
 ## 目录结构
 
 ```
@@ -122,7 +144,10 @@ public/
 ├─ models/         # 人脸检测模型（本地，离线可用）
 ├─ pwa-192.png     # 应用图标
 └─ pwa-512.png
-.github/workflows/deploy.yml   # 推送到 main 自动部署 GitHub Pages
+android/            # Capacitor 生成的原生 Android 工程
+.github/workflows/
+├─ deploy.yml         # 推送到 main 自动部署 GitHub Pages
+└─ android-apk.yml    # 推送到 main 自动构建 Android APK
 ```
 
 ## 数据模型
