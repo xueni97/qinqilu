@@ -43,8 +43,19 @@ export async function getRelative(id) {
   return db.relatives.get(id)
 }
 
-// 创建
+// 重名校验：同一份亲戚名单里不允许同名（trim 后全等比较）
+// excludeId：编辑时排除自己；返回重复的亲戚记录，无重复返回 null
+export async function findDuplicateByName(name, excludeId = null) {
+  const n = (name || '').trim()
+  if (!n) return null
+  const all = await db.relatives.toArray()
+  return all.find((r) => !r.deleted && r.id !== excludeId && (r.name || '').trim() === n) || null
+}
+
+// 创建（含重名校验）
 export async function createRelative(data) {
+  const dup = await findDuplicateByName(data.name)
+  if (dup) throw new Error(`已存在同名亲戚「${dup.name}」，不能重复添加`)
   const now = Date.now()
   const id = await db.relatives.add({
     ...data,
@@ -55,10 +66,16 @@ export async function createRelative(data) {
   return id
 }
 
-// 更新（含树校验 + 辈分校验 + 配偶双向同步）
+// 更新（含重名校验 + 树校验 + 辈分校验 + 配偶双向同步）
 export async function updateRelative(id, patch) {
   const current = await db.relatives.get(id)
   if (!current) throw new Error(`亲戚不存在: id=${id}`)
+
+  // 重名校验：改名时不能和别的亲戚重名
+  if (Object.prototype.hasOwnProperty.call(patch, 'name')) {
+    const dup = await findDuplicateByName(patch.name, id)
+    if (dup) throw new Error(`已存在同名亲戚「${dup.name}」，不能重复添加`)
+  }
 
   // 树校验：parentId 改了要校验
   const effectiveParentId = Object.prototype.hasOwnProperty.call(patch, 'parentId')

@@ -228,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showSuccessToast, showFailToast } from 'vant'
 import {
@@ -240,6 +240,7 @@ import { compressPhoto } from '../utils/photo.js'
 import { cropFaceToSticker } from '../utils/faceDetect.js'
 import { RELATIONSHIP_PRESETS, BRANCH_PRESETS, FEATURE_PRESETS } from '../utils/presets.js'
 import { safeBack } from '../router/index.js'
+import { pushBackHandler } from '../utils/nativeBack.js'
 import BaiduMapPicker from '../components/BaiduMapPicker.vue'
 
 const route = useRoute()
@@ -317,8 +318,14 @@ async function loadPickerColumns() {
 }
 
 const genLabel = computed(() => GEN_NAMES[form.value.generation] || '未选')
-const parentLabel = computed(() => form.value.parentId ? `ID ${form.value.parentId}` : '未选')
-const spouseLabel = computed(() => form.value.spouseId ? `ID ${form.value.spouseId}` : '未选')
+// 父/配偶回显：从候选列表里找到对应姓名显示，而不是只显示 ID（用户无法辨认）
+function idToLabel(columns, idVal) {
+  if (!idVal) return '未选'
+  const hit = columns.find((c) => c.value === idVal)
+  return hit ? hit.text : `ID ${idVal}`
+}
+const parentLabel = computed(() => idToLabel(parentColumns.value, form.value.parentId))
+const spouseLabel = computed(() => idToLabel(spouseColumns.value, form.value.spouseId))
 
 function onGenConfirm({ selectedValues }) {
   form.value.generation = selectedValues[0]
@@ -453,8 +460,8 @@ async function onAlbumPicked(e) {
 
 async function onSave() {
   try {
-    // 特征数组拼成字符串存储
-    const payload = { ...form.value, features: selectedFeatures.value.join('/') }
+    // 特征数组拼成字符串存储；姓名去掉首尾空格（防止"张三 "绕过重名校验）
+    const payload = { ...form.value, name: form.value.name.trim(), features: selectedFeatures.value.join('/') }
     if (payload.generation === null) delete payload.generation
 
     let savedId
@@ -544,11 +551,28 @@ async function load() {
   await loadPickerColumns()
 }
 
-onMounted(load)
+// 原生返回：打开的弹层优先逐个关闭，全部关闭后才返回上一页
+let unregisterBack = null
+onMounted(() => {
+  unregisterBack = pushBackHandler(() => {
+    // 地图选点组件自身也在栈顶注册，此分支作防御性兜底
+    if (showMapPicker.value) { showMapPicker.value = false; return true }
+    if (showDelete.value) { showDelete.value = false; return true }
+    if (showStickerPreview.value) { showStickerPreview.value = false; return true }
+    if (showGenPicker.value) { showGenPicker.value = false; return true }
+    if (showRelPicker.value) { showRelPicker.value = false; return true }
+    if (showBranchPicker.value) { showBranchPicker.value = false; return true }
+    if (showParentPicker.value) { showParentPicker.value = false; return true }
+    if (showSpousePicker.value) { showSpousePicker.value = false; return true }
+    return false
+  })
+  load()
+})
+onUnmounted(() => unregisterBack?.())
 </script>
 
 <style scoped>
-.page { min-height: 100vh; background: #f7f8fa; padding-bottom: 80px; }
+.page { min-height: 100vh; background: #f7f8fa; padding-bottom: calc(80px + var(--app-safe-bottom)); }
 
 .photo-section { padding: 8px 16px; }
 .photo-label { font-size: 14px; color: #646566; margin-bottom: 8px; }
@@ -589,7 +613,7 @@ onMounted(load)
   margin-top: 4px;
 }
 
-.save-bar { padding: 16px; position: sticky; bottom: 0; background: #fff; }
+.save-bar { padding: 16px 16px calc(16px + var(--app-safe-bottom)); position: sticky; bottom: 0; background: #fff; }
 
 /* 特征勾选区 */
 .features-section { padding: 8px 16px; }
