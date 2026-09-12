@@ -124,8 +124,8 @@ android/            # Capacitor 原生 Android 工程
 
 1. **gradlew 权限**：Windows 提交的 gradlew 在 Linux CI 无执行权限，必须 `chmod +x`
 2. **签名不一致**：debug 构建每次用随机密钥，必须用固定 release keystore
-3. **状态栏重叠**：Capacitor 8 + WebView 140+ + viewport-fit=cover 时走 passthrough 模式，`env(safe-area-inset-top)` 在 Android WebView 返回 0；必须用 Capacitor 注入的 `--safe-area-inset-top`（项目封装为 `var(--app-safe-top)`）。不要给原生布局加 fitsSystemWindows，会双重偏移
-4. **硬件返回键/侧滑返回**：@capacitor/app 必须**静态 import**（动态 import 在 WebView 可能不执行），用 `Capacitor.isNativePlatform()` 守卫；首页 `/` 调 `exitApp()` 退出，其他页 `safeBack()` 返回上一层
+3. **状态栏重叠**：Capacitor 8 + WebView 140+ + viewport-fit=cover 时走 passthrough 模式，`env(safe-area-inset-top)` 在 Android WebView 返回 0；必须用 Capacitor 注入的 `--safe-area-inset-top`（项目封装为 `var(--app-safe-top)`，底部同理 `--app-safe-bottom`）。不要给原生布局加 fitsSystemWindows，会双重偏移。**两种页面布局只能二选一**：① 非 fixed 导航栏页（Detail/Edit/Tree/Backup）靠 `.app` 全局 padding-top 下推；② fixed 导航栏页（List/Gifts/Reminders）内部 calc 已含安全区，必须给页面根元素加 `margin-top: calc(-1 * var(--app-safe-top))` 抵消全局 padding，否则安全区被加两次；全屏 fixed 弹层（BaiduMapPicker）只加自身 padding，不套页面根
+4. **硬件返回键/侧滑返回**：@capacitor/app 必须**静态 import**（动态 import 在 WebView 可能不执行），用 `Capacitor.isNativePlatform()` 守卫；首页 `/` 调 `exitApp()` 退出，其他页 `safeBack()` 返回上一层。**弹层优先**：所有全屏子页/弹窗（BaiduMapPicker、van-popup、van-dialog、van-action-sheet、van-image-preview）必须通过 `utils/nativeBack.js` 的 `pushBackHandler` 注册拦截（返回 true 表示已消费），组件卸载必须注销；App.vue 按「拦截栈 → 页面返回 → 退出」顺序裁决。新增带弹层的页面时必须同步注册，否则弹层打开时侧滑会直接退页/退出 APP
 5. **IndexedDB Blob**：fake-indexeddb 取出的 blob 可能丢原型，用 `instanceof Blob` 检查
 6. **百度地图 AK**：浏览器端 AK 是公开的（靠 Referer 白名单保护），需在百度控制台加 `xueni97.github.io`
 7. **npm 网络偶发失败**：重试即可，不是代码问题
@@ -140,4 +140,5 @@ android/            # Capacitor 原生 Android 工程
 - 禁止在视图层直接操作 `db`（必须走 DAO 层）
 - 禁止用 `$router.back()`（用 `safeBack(router)` 代替）
 - 禁止给照片压缩参数降级（已从 1024px 升到 2560px 高清）
-- 禁止在固定定位元素上省略 `env(safe-area-inset-top)`
+- 禁止在固定定位元素上省略安全区偏移（统一用 `var(--app-safe-top)` / `var(--app-safe-bottom)`，不要裸写 env()）
+- 禁止新增弹层/全屏子页时不注册 `pushBackHandler`（否则侧滑会绕过弹层直接退页）
